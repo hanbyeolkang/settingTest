@@ -9,7 +9,7 @@ import sys
 
 # 커스텀 플러그인 import
 sys.path.insert(0, '/opt/airflow/plugins')
-from kobis_api import SeoulAPI
+from seoul_api import SeoulAPI
 from s3_utils import S3Manager
 from redshift_utils import RedshiftManager
 
@@ -23,16 +23,12 @@ def test():
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
     REDSHIFT_USER = os.getenv('REDSHIFT_USER')
-    KOBIS_API_KEY = os.getenv('KOBIS_API_KEY')
-    SUPERSET_SECRET_KEY = os.getenv('SUPERSET_SECRET_KEY')
 
     print("Hello, World!")
+    print(SeoulAPI.get_yesterday())
     print('aws: ' + AWS_ACCESS_KEY_ID[:3])
     print('s3: ' + S3_BUCKET_NAME[:3])
     print('redshift: ' + REDSHIFT_USER[:3])
-    print('kobis: ' + KOBIS_API_KEY[:3])
-    print('superest: ' + SUPERSET_SECRET_KEY[:3])
-
 
 with DAG(
     dag_id="test",
