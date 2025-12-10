@@ -2,6 +2,8 @@ x-airflow-environment: &airflow-common-env
   AIRFLOW__CORE__EXECUTOR: LocalExecutor
   AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: "false"
   AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+  # AWS & Redshift & Custom ENV
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   S3_BUCKET_NAME: ${S3_BUCKET_NAME}
@@ -31,21 +33,22 @@ services:
     build: ./airflow
     entrypoint: >
       bash -c "
-      echo 'Initializing Airflow DB...' &&
-      airflow db init
+        echo 'Initializing Airflow Metadata DB...' &&
+        airflow db init &&
+        echo 'Airflow DB initialization completed.'
       "
     environment:
       <<: *airflow-common-env
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     depends_on:
       postgres:
         condition: service_healthy
     restart: "no"
 
-
   # Airflow Webserver
   airflow-webserver:
     build: ./airflow
-    command: webserver
+    command: ["airflow", "webserver"]
     ports:
       - "8080:8080"
     environment:
@@ -64,25 +67,10 @@ services:
   # Airflow Scheduler
   airflow-scheduler:
     build: ./airflow
-    command: scheduler
+    command: ["airflow", "scheduler"]
     environment:
       <<: *airflow-common-env
-    volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
-      - ./scripts:/opt/airflow/scripts
-      - ./dbt:/opt/airflow/dbt
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
-
-  # Airflow Worker
-  airflow-worker:
-    build: ./airflow
-    command: worker
-    environment:
-      <<: *airflow-common-env
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
