@@ -29,6 +29,7 @@ def test():
     print('aws: ' + AWS_ACCESS_KEY_ID[:3])
     print('s3: ' + S3_BUCKET_NAME[:3])
     print('redshift: ' + REDSHIFT_USER[:3])
+    print('CI/CD test')
 
 with DAG(
     dag_id="test",
