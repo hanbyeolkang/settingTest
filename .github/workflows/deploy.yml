@@ -1,4 +1,4 @@
-name: Deploy to EC2 (Local Docker Compose Build)
+name: Deploy to EC2
 
 on:
   push:
@@ -49,7 +49,7 @@ jobs:
           docker compose down || true
 
           echo "Running local build..."
-          docker compose build --no-cache
+          docker compose build
 
           echo "Starting new containers..."
           docker compose up -d
