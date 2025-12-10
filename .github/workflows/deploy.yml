@@ -1,0 +1,58 @@
+name: Deploy to EC2 (Local Docker Compose Build)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # 1. 외부 fork PR은 GitHub-hosted runner에서만 검증 실행
+  external-pr-check:
+    if: github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Validate (Lint/Test optional)
+        run: |
+          echo "External fork PR detected. Running safe validation on GitHub-hosted runner."
+
+  # 2. 내부 PR / main push / 수동 실행 → self-hosted runner 배포
+  deploy:
+    if: |
+      github.event_name != 'pull_request'
+      || github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Show deployment info
+        run: |
+          echo "Deploying on self-hosted runner (EC2)"
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Repo:   ${{ github.repository }}"
+
+      # Docker compose local build & run
+      - name: Local Docker Compose Deploy
+        run: |
+          echo "Stopping previous containers..."
+          docker compose down || true
+
+          echo "Running local build..."
+          docker compose build --no-cache
+
+          echo "Starting new containers..."
+          docker compose up -d
+
+      - name: Cleanup unused images
+        run: docker image prune -af || true

@@ -58,7 +58,6 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
-      - ./scripts:/opt/airflow/scripts
       - ./dbt:/opt/airflow/dbt
     depends_on:
       airflow-init:
@@ -75,7 +74,6 @@ services:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./airflow/plugins:/opt/airflow/plugins
-      - ./scripts:/opt/airflow/scripts
       - ./dbt:/opt/airflow/dbt
     depends_on:
       airflow-init:
