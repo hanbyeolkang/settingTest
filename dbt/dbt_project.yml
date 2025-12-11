@@ -1,6 +1,6 @@
 name: 'coreload_proj' # profiles.yml에 정의된 프로필 이름과 일치해야 함
 version: '1.0.0'
-config-version: 1
+config-version: 2
 
 profile: 'coreload_proj' # profiles.yml의 프로필 이름
 
