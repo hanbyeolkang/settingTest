@@ -13,10 +13,6 @@ from seoul_api import SeoulAPI
 from s3_utils import S3Manager
 from redshift_utils import RedshiftManager
 
-# dotenv 로드 추가
-dotenv_path = Path(__file__).parent.parent / '.env'
-load_dotenv(dotenv_path=dotenv_path)
-
 
 @task
 def test():

@@ -38,6 +38,8 @@ services:
         airflow db init &&
         echo 'Airflow DB initialization completed.'
       "
+    env_file:
+      - /home/ec2-user/env/settingTest.env
     environment:
       <<: *airflow-common-env
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
@@ -53,6 +55,8 @@ services:
     command: ["airflow", "webserver"]
     ports:
       - "8080:8080"
+    env_file:
+      - /home/ec2-user/env/settingTest.env
     environment:
       <<: *airflow-common-env
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
@@ -70,6 +74,8 @@ services:
     build: ./airflow
     user: "1000:1000"   # ec2-user 권한
     command: ["airflow", "scheduler"]
+    env_file:
+      - /home/ec2-user/env/settingTest.env
     environment:
       <<: *airflow-common-env
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
