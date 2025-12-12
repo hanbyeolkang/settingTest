@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.decorators import task
 from airflow.operators.python import PythonOperator
+from dotenv import load_dotenv
+from pathlib import Path
 import os
 import sys
 
