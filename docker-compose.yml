@@ -7,7 +7,7 @@ x-airflow-environment: &airflow-common-env
   _AIRFLOW_WWW_USER_USERNAME: 'admin'
   _AIRFLOW_WWW_USER_PASSWORD: 'admin'
 
-  # AWS & Redshift & Custom ENV
+  # ENV
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   S3_BUCKET_NAME: ${S3_BUCKET_NAME}
@@ -16,6 +16,7 @@ x-airflow-environment: &airflow-common-env
   REDSHIFT_DB: ${REDSHIFT_DB}
   REDSHIFT_USER: ${REDSHIFT_USER}
   REDSHIFT_PASSWORD: ${REDSHIFT_PASSWORD}
+  SEOUL_KEY: ${SEOUL_KEY}
 
 services:
   # PostgreSQL for Airflow metadata
