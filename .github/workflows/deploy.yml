@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "main" ]
-  
+
 jobs:
   # 1. 외부 fork PR은 GitHub-hosted runner에서만 검증 실행
   external-pr-check:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate (Lint/Test optional)
-        run: | 
+        run: |
           echo "External fork PR detected. Running safe validation on GitHub-hosted runner."
 
   # 2. 내부 PR / main push / 수동 실행 → self-hosted runner 배포
@@ -32,10 +32,15 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Clean workspace and Checkout source
+      # 권한 문제 해결을 위한 cleanup
+      - name: Clean workspace
+        run: |
+          cd ${{ github.workspace }} || true
+          sudo chown -R ec2-user:ec2-user . || true
+          sudo chmod -R 755 . || true
+
+      - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          clean: true 
 
       # 워크스페이스 밖에 있는 .env 파일을 복사
       - name: Copy .env file
@@ -52,6 +57,7 @@ jobs:
           echo "Deploying on self-hosted runner (EC2)"
           echo "Event: ${{ github.event_name }}"
           echo "Branch: ${{ github.ref }}"
+          echo "Repo:   ${{ github.repository }}"
 
       # Docker compose local build & run
       - name: Local Docker Compose Deploy
@@ -71,4 +77,5 @@ jobs:
       # 다음 실행을 위한 권한 정리
       - name: Fix permissions for next run
         run: |
-          sudo chown -R ec2-user:ec2-user ${{ github.workspace }} || true
+          sudo chown -R ec2-user:ec2-user airflow/logs || true
+          sudo chmod -R 755 airflow/dags airflow/plugins || true
