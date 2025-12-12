@@ -1,63 +1,9 @@
 from __future__ import annotations
 from datetime import datetime
 from airflow import DAG
-from airflow.decorators import task
-import subprocess
+from airflow.providers.docker.operators.docker import DockerOperator
+from docker.types import Mount
 import os
-
-# dbt 프로젝트 설정
-DBT_PROJECT_DIR = '/opt/airflow/dbt'
-DBT_PROFILE = 'coreload_proj'
-
-
-@task
-def run_dbt_model():
-    # 환경 변수 확인 및 출력
-    print("=== Environment Variables ===")
-    for key in ['REDSHIFT_HOST', 'REDSHIFT_PORT', 'REDSHIFT_DB', 'REDSHIFT_USER', 'REDSHIFT_PASSWORD']:
-        value = os.getenv(key)
-        if value:
-            print(f"{key}: {'***' if 'PASSWORD' in key else value}")
-        else:
-            print(f"{key}: NOT SET")
-    
-    if not os.getenv('REDSHIFT_HOST'):
-        raise ValueError("REDSHIFT_HOST environment variable is not set.")
-    
-    print("\n=== Running dbt command ===")
-    dbt_command = [
-        "dbt",
-        "run",
-        "--profile", DBT_PROFILE,
-        "--project-dir", DBT_PROJECT_DIR,
-        "--profiles-dir", DBT_PROJECT_DIR,
-        "--select", "stg_sample"
-    ]
-    
-    print(f"Command: {' '.join(dbt_command)}")
-    
-    try:
-        result = subprocess.run(
-            dbt_command,
-            check=True, 
-            capture_output=True,
-            text=True,
-            cwd=DBT_PROJECT_DIR  # 작업 디렉토리 명시
-        )
-        print("\n=== dbt STDOUT ===")
-        print(result.stdout)
-        if result.stderr:
-            print("\n=== dbt STDERR ===")
-            print(result.stderr)
-        
-    except subprocess.CalledProcessError as e:
-        print("\n=== dbt FAILED ===")
-        print(f"Return code: {e.returncode}")
-        print("\n=== STDOUT ===")
-        print(e.stdout)
-        print("\n=== STDERR ===")
-        print(e.stderr)
-        raise
 
 
 with DAG(
@@ -68,4 +14,30 @@ with DAG(
     tags=["dbt", "redshift", "test"]
 ) as dag:
 
-    run_dbt_model()
+    dbt_run = DockerOperator(
+        task_id="dbt_run",
+        image="dbt-runner:latest",
+        api_version="auto",
+        auto_remove="success",
+        command="run --select models/staging/stg_sample.sql --project-dir /usr/app",
+        docker_url="unix:///var/run/docker.sock",  # 명시적으로 지정
+        tls_hostname=False,
+        tls_verify=False,
+        network_mode="bridge",
+        mount_tmp_dir=False,  # 임시 디렉토리 마운트 비활성화
+        mounts=[
+            Mount(
+                source=os.getenv("DBT_PROJECT_PATH"),
+                target="/usr/app",
+                type="bind"
+            )
+        ],
+        environment={
+            "DBT_PROFILES_DIR": "/usr/app",
+            "REDSHIFT_HOST": os.getenv("REDSHIFT_HOST"),
+            "REDSHIFT_PORT": os.getenv("REDSHIFT_PORT", "5439"),
+            "REDSHIFT_USER": os.getenv("REDSHIFT_USER"),
+            "REDSHIFT_PASSWORD": os.getenv("REDSHIFT_PASSWORD"),
+            "REDSHIFT_DB": os.getenv("REDSHIFT_DB"),
+        }
+    )

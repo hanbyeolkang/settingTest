@@ -75,7 +75,7 @@ jobs:
         run: docker image prune -af || true
       
       # 다음 실행을 위한 권한 정리
-      - name: Fix log permissions
+      - name: Fix permissions for next run
         run: |
           sudo chown -R ec2-user:ec2-user airflow/logs || true
-          sudo chmod -R 755 airflow/logs || true
+          sudo chmod -R 755 airflow/dags airflow/plugins || true
