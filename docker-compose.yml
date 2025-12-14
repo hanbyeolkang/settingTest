@@ -3,10 +3,6 @@ x-airflow-environment: &airflow-common-env
   AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS: "false"
   AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
 
-  # Airflow Admin User
-  _AIRFLOW_WWW_USER_USERNAME: 'admin'
-  _AIRFLOW_WWW_USER_PASSWORD: 'admin'
-
   # ENV
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
@@ -17,6 +13,8 @@ x-airflow-environment: &airflow-common-env
   REDSHIFT_USER: ${REDSHIFT_USER}
   REDSHIFT_PASSWORD: ${REDSHIFT_PASSWORD}
   SEOUL_KEY: ${SEOUL_KEY}
+  AIRFLOW_WWW_USERNAME: ${AIRFLOW_WWW_USERNAME}
+  AIRFLOW_WWW_PASSWORD: ${AIRFLOW_WWW_PASSWORD}
 
 services:
   # PostgreSQL for Airflow metadata
@@ -41,7 +39,13 @@ services:
         echo 'Initializing Airflow Metadata DB...' &&
         airflow db init &&
         echo 'Creating admin user...' &&
-        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+        airflow users create \
+          --username \"$AIRFLOW_WWW_USERNAME\" \
+          --password \"$AIRFLOW_WWW_PASSWORD\" \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com &&
         echo 'Airflow DB initialization completed.'
       "
     environment:
