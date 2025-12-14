@@ -39,13 +39,7 @@ services:
         echo 'Initializing Airflow Metadata DB...' &&
         airflow db init &&
         echo 'Creating admin user...' &&
-        airflow users create \
-          --username \"$AIRFLOW_WWW_USERNAME\" \
-          --password \"$AIRFLOW_WWW_PASSWORD\" \
-          --firstname Admin \
-          --lastname User \
-          --role Admin \
-          --email admin@example.com &&
+        airflow users create --username \"$AIRFLOW_WWW_USERNAME\" --password \"$AIRFLOW_WWW_PASSWORD\" --firstname Admin --lastname User --role Admin --email admin@example.com
         echo 'Airflow DB initialization completed.'
       "
     environment:
